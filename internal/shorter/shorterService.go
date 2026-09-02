@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"urlShorter/internal/structs"
-	"urlShorter/internal/structs/createLinkResponse"
 )
 
 func CreateLinkHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +27,7 @@ func CreateLinkHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	encodeErr := json.NewEncoder(w).Encode(createLinkResponse.SuccessResponse{
+	encodeErr := json.NewEncoder(w).Encode(structs.SuccessResponse{
 		Success: "created",
 	})
 	if encodeErr != nil {
