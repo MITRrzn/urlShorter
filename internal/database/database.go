@@ -2,13 +2,13 @@ package database
 
 import (
 	"database/sql"
+	"os"
 
 	_ "github.com/lib/pq"
 )
 
 func Connect() (*sql.DB, error) {
-	path := "" //TODO сформировать path на основе .env
-	db, err := sql.Open("postgres", path)
+	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return nil, err
 	}

@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -23,7 +25,7 @@ func main() {
 
 	log.Println("Starting server at port 8080")
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    fmt.Sprint(":", os.Getenv("APP_PORT")),
 		Handler: mux,
 	}
 	go func() {
