@@ -1,12 +1,10 @@
 package shorter
 
 import (
-	"crypto/rand"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"log"
-	"math/big"
 	"net/http"
 	"net/url"
 	"urlShorter/internal/database"
@@ -53,7 +51,7 @@ func CreateLinkHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortURL, err := generateShortUrl()
+	shortURL, err := GenerateShortUrl()
 	if err != nil {
 		writeErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -63,17 +61,6 @@ func CreateLinkHandler(w http.ResponseWriter, r *http.Request) {
 	if linkRepoErr != nil {
 		writeErrorResponse(w, linkRepoErr.Error(), http.StatusInternalServerError)
 	}
-}
-
-func generateShortUrl() (string, error) {
-	result := make([]byte, 7)
-
-	for i := range result {
-		n, _ := rand.Int(rand.Reader, big.NewInt(int64(len(alphabet))))
-		result[i] = alphabet[n.Int64()]
-	}
-
-	return string(result), nil
 }
 
 func validateURL(linkURL string) error {
