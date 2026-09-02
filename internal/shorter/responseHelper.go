@@ -6,9 +6,9 @@ import (
 	"urlShorter/internal/structs"
 )
 
-func writeErrorResponse(w http.ResponseWriter, errorMessage string) {
+func writeErrorResponse(w http.ResponseWriter, errorMessage string, statusCode int) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusBadRequest)
+	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(structs.ErrorResponse{
 		Error: errorMessage,
 	})
