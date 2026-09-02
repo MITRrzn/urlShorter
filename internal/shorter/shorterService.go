@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"urlShorter/internal/structs"
+	"urlShorter/internal/structs/createLinkResponse"
 )
 
 func CreateLinkHandler(w http.ResponseWriter, r *http.Request) {
@@ -15,42 +16,43 @@ func CreateLinkHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&link); err != nil {
 		log.Println("decode error:", err)
+		writeErrorResponse(w, "incorrect json format")
 		return
 	}
 
-	validateErr := validateLink(link)
+	validateErr := validateURL(link.URL)
 	if validateErr != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		_, err := w.Write([]byte(validateErr.Error()))
-		if err != nil {
-			return
-		}
+		writeErrorResponse(w, validateErr.Error())
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	_, err := w.Write([]byte("created"))
-	if err != nil {
+	encodeErr := json.NewEncoder(w).Encode(createLinkResponse.SuccessResponse{
+		Success: "created",
+	})
+	if encodeErr != nil {
+		log.Println(encodeErr)
 		return
 	}
 }
 
-func validateLink(link structs.LinkStruct) error {
-	if link.URL == "" {
+func validateURL(linkURL string) error {
+	if linkURL == "" {
 		return errors.New("url is empty")
 	}
 
-	parsedUrl, err := url.Parse(link.URL)
+	parsedURL, err := url.Parse(linkURL)
 	if err != nil {
 		return err
 	}
 
 	switch {
-	case parsedUrl.Scheme == "":
+	case parsedURL.Scheme == "":
 		return errors.New("scheme is empty")
-	case parsedUrl.Scheme != "http" && parsedUrl.Scheme != "https":
+	case parsedURL.Scheme != "http" && parsedURL.Scheme != "https":
 		return errors.New("url scheme must be http or https")
-	case parsedUrl.Host == "":
+	case parsedURL.Host == "":
 		return errors.New("host is empty")
 	default:
 		return nil
