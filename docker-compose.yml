@@ -8,7 +8,8 @@ services:
     container_name: url-shortener-api
 
     environment:
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/url_shortener?sslmode=disable
+      APP_PORT: ${APP_PORT}
+      DATABASE_URL: ${DATABASE_URL}
       REDIS_ADDR: redis:6379
       KAFKA_BROKERS: kafka:9092
 
