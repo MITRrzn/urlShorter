@@ -12,7 +12,7 @@ func main() {
 	amount := flag.Int64("links", 100, "amount of links to generate")
 	flag.Parse()
 
-	db, err := database.Connect()
+	db, err := database.PsqlConnect()
 	if err != nil {
 		panic(err)
 	}

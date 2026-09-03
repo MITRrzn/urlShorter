@@ -10,8 +10,11 @@ services:
     environment:
       APP_PORT: ${APP_PORT}
       DATABASE_URL: ${DATABASE_URL}
-      REDIS_ADDR: redis:6379
       KAFKA_BROKERS: kafka:9092
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_USER: ${REDIS_USER}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_DB: ${REDIS_DB}
 
     ports:
       - "8081:8080"

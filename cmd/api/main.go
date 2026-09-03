@@ -20,7 +20,7 @@ func main() {
 	defer stop()
 
 	mux := http.NewServeMux()
-	db, err := database.Connect()
+	db, err := database.PsqlConnect()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -30,8 +30,13 @@ func main() {
 		}
 	}()
 
+	redisClient, redisErr := database.GetRedisClient(ctx)
+	if redisErr != nil {
+		log.Fatal(redisErr)
+	}
+
 	mux.HandleFunc("POST /links", shorter.CreateLinkHandler(db))
-	mux.HandleFunc("GET /{code}", redirect.RedirectHandler(db))
+	mux.HandleFunc("GET /{code}", redirect.RedirectHandler(db, redisClient))
 
 	port := os.Getenv("APP_PORT")
 	log.Println("Starting server at port", port)
