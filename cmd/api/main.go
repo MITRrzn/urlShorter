@@ -24,6 +24,15 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	ping := db.Ping()
+	if ping != nil {
+		closeErr := db.Close()
+		if closeErr != nil {
+			log.Printf("db close by ping, error: %v", closeErr)
+			return
+		}
+		log.Fatal("database connection failed")
+	}
 	defer func() {
 		if dbCloseErr := db.Close(); dbCloseErr != nil {
 			log.Printf("db close error: %v", dbCloseErr)
