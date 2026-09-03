@@ -1,12 +1,14 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"urlShorter/internal/structs"
 )
 
-func AddLink(db *sql.DB, sourceURL string, shortURL string) error {
-	_, err := db.Exec(
+func AddLink(ctx context.Context, db *sql.DB, sourceURL string, shortURL string) error {
+	_, err := db.ExecContext(
+		ctx,
 		`INSERT INTO links(short_code, original_url)
 			VALUES($1, $2)
 			`,
@@ -16,10 +18,11 @@ func AddLink(db *sql.DB, sourceURL string, shortURL string) error {
 	return err
 }
 
-func GetUrlByShortCode(db *sql.DB, shortCode string) (structs.LinkResponse, error) {
+func GetUrlByShortCode(ctx context.Context, db *sql.DB, shortCode string) (structs.LinkResponse, error) {
 	var result structs.LinkResponse
 
-	err := db.QueryRow(
+	err := db.QueryRowContext(
+		ctx,
 		`
 		SELECT
     		l.short_code AS short_code,

@@ -1,6 +1,7 @@
 package seed
 
 import (
+	"context"
 	"database/sql"
 	"urlShorter/internal/repository"
 	"urlShorter/internal/shorter"
@@ -12,6 +13,7 @@ import (
 func Run(db *sql.DB, amount int64) int64 {
 	var total int64
 
+	ctx := context.Background()
 	pb := progressbar.Default(amount)
 	for i := 0; int64(i) < amount; i++ {
 		err := pb.Add(1)
@@ -21,7 +23,7 @@ func Run(db *sql.DB, amount int64) int64 {
 			continue
 		}
 
-		err = repository.AddLink(db, sourceURL, shortURL)
+		err = repository.AddLink(ctx, db, sourceURL, shortURL)
 		if err != nil {
 			continue
 		}

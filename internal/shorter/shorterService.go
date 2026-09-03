@@ -1,6 +1,7 @@
 package shorter
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -33,7 +34,7 @@ func CreateLinkHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		storeResult, storeErr := storeShortURL(db, link)
+		storeResult, storeErr := storeShortURL(r.Context(), db, link)
 
 		if storeErr != nil {
 			helper.WriteErrorResponse(w, "failed to create short url", http.StatusInternalServerError)
@@ -53,7 +54,7 @@ func CreateLinkHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func storeShortURL(db *sql.DB, link structs.LinkStruct) (string, error) {
+func storeShortURL(ctx context.Context, db *sql.DB, link structs.LinkStruct) (string, error) {
 	for i := 0; i < 5; i++ {
 		var pqErr *pq.Error
 
@@ -63,7 +64,7 @@ func storeShortURL(db *sql.DB, link structs.LinkStruct) (string, error) {
 			return "", genErr
 		}
 
-		err := repository.AddLink(db, link.URL, shortURL)
+		err := repository.AddLink(ctx, db, link.URL, shortURL)
 		if err == nil {
 			return shortURL, nil
 		}

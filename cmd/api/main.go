@@ -45,8 +45,9 @@ func main() {
 	port := os.Getenv("APP_PORT")
 	log.Println("Starting server at port", port)
 	server := &http.Server{
-		Addr:    fmt.Sprint(":", port),
-		Handler: mux,
+		Addr:              fmt.Sprint(":", port),
+		Handler:           mux,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 	go func() {
 		err := server.ListenAndServe()
