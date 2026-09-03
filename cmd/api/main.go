@@ -33,9 +33,10 @@ func main() {
 	mux.HandleFunc("POST /links", shorter.CreateLinkHandler(db))
 	mux.HandleFunc("GET /{code}", redirect.RedirectHandler(db))
 
-	log.Println("Starting server at port 8080")
+	port := os.Getenv("APP_PORT")
+	log.Println("Starting server at port", port)
 	server := &http.Server{
-		Addr:    fmt.Sprint(":", os.Getenv("APP_PORT")),
+		Addr:    fmt.Sprint(":", port),
 		Handler: mux,
 	}
 	go func() {
