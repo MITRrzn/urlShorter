@@ -45,7 +45,8 @@ func CreateLinkHandler(db *sql.DB) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		encodeErr := json.NewEncoder(w).Encode(structs.SuccessResponse{
-			Success: "created",
+			Success:  "created",
+			ShortURL: shortURL,
 		})
 		if encodeErr != nil {
 			log.Println(encodeErr)

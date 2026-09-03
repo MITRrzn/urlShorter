@@ -5,5 +5,6 @@ type ErrorResponse struct {
 }
 
 type SuccessResponse struct {
-	Success string `json:"success"`
+	Success  string `json:"success"`
+	ShortURL string `json:"short_url"`
 }
