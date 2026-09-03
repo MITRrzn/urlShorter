@@ -1,4 +1,4 @@
-package shorter
+package helper
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"urlShorter/internal/structs"
 )
 
-func writeErrorResponse(w http.ResponseWriter, errorMessage string, statusCode int) {
+func WriteErrorResponse(w http.ResponseWriter, errorMessage string, statusCode int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(structs.ErrorResponse{

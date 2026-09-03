@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"urlShorter/internal/database"
 	"urlShorter/internal/redirect"
 	"urlShorter/internal/shorter"
 )
@@ -19,9 +20,13 @@ func main() {
 	defer stop()
 
 	mux := http.NewServeMux()
+	db, err := database.Connect()
+	if err != nil {
+		panic(err)
+	}
 
-	mux.HandleFunc("POST /links", shorter.CreateLinkHandler)
-	mux.HandleFunc("GET /{code}", redirect.RedirectHandler)
+	mux.HandleFunc("POST /links", shorter.CreateLinkHandler(db))
+	mux.HandleFunc("GET /{code}", redirect.RedirectHandler(db))
 
 	log.Println("Starting server at port 8080")
 	server := &http.Server{

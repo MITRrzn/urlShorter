@@ -7,59 +7,50 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"urlShorter/internal/database"
+	"urlShorter/internal/helper"
 	"urlShorter/internal/repository"
 	"urlShorter/internal/structs"
 )
 
 const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-func CreateLinkHandler(w http.ResponseWriter, r *http.Request) {
-	db, err := database.Connect()
-	if err != nil {
-		panic(err)
-	}
-	defer func(db *sql.DB) {
-		err := db.Close()
-		if err != nil {
+func CreateLinkHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var link structs.LinkStruct
 
+		decoder := json.NewDecoder(r.Body)
+		if err := decoder.Decode(&link); err != nil {
+			log.Println("decode error:", err)
+			helper.WriteErrorResponse(w, "incorrect json format", http.StatusBadRequest)
+			return
 		}
-	}(db)
 
-	var link structs.LinkStruct
+		validateErr := validateURL(link.URL)
+		if validateErr != nil {
+			helper.WriteErrorResponse(w, validateErr.Error(), http.StatusBadRequest)
+			return
+		}
 
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&link); err != nil {
-		log.Println("decode error:", err)
-		writeErrorResponse(w, "incorrect json format", http.StatusBadRequest)
-		return
-	}
+		shortURL, err := GenerateShortUrl()
+		if err != nil {
+			helper.WriteErrorResponse(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	validateErr := validateURL(link.URL)
-	if validateErr != nil {
-		writeErrorResponse(w, validateErr.Error(), http.StatusBadRequest)
-		return
-	}
+		linkRepoErr := repository.AddLink(db, link.URL, shortURL)
+		if linkRepoErr != nil {
+			helper.WriteErrorResponse(w, linkRepoErr.Error(), http.StatusInternalServerError)
+		}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	encodeErr := json.NewEncoder(w).Encode(structs.SuccessResponse{
-		Success: "created",
-	})
-	if encodeErr != nil {
-		log.Println(encodeErr)
-		return
-	}
-
-	shortURL, err := GenerateShortUrl()
-	if err != nil {
-		writeErrorResponse(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	linkRepoErr := repository.AddLink(db, link.URL, shortURL)
-	if linkRepoErr != nil {
-		writeErrorResponse(w, linkRepoErr.Error(), http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		encodeErr := json.NewEncoder(w).Encode(structs.SuccessResponse{
+			Success: "created",
+		})
+		if encodeErr != nil {
+			log.Println(encodeErr)
+			return
+		}
 	}
 }
 
