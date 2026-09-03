@@ -2,13 +2,11 @@ package redirect
 
 import (
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
 	"urlShorter/internal/helper"
 	"urlShorter/internal/repository"
-	"urlShorter/internal/structs"
 )
 
 func RedirectHandler(db *sql.DB) http.HandlerFunc {
@@ -27,16 +25,6 @@ func RedirectHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-
-		encodeErr := json.NewEncoder(w).Encode(structs.LinkResponse{
-			ShortURL:    redirectData.ShortURL,
-			OriginalURL: redirectData.OriginalURL,
-		})
-		if encodeErr != nil {
-			log.Println(encodeErr)
-			return
-		}
+		http.Redirect(w, r, redirectData.OriginalURL, http.StatusFound)
 	}
 }
