@@ -46,6 +46,10 @@ func main() {
 
 	log.Println("Shutting down server")
 	shutdownErr := server.Shutdown(shutdownCtx)
+	dbCloseErr := db.Close()
+	if dbCloseErr != nil {
+		log.Printf("Error closing database connection: %s", dbCloseErr.Error())
+	}
 	if shutdownErr != nil {
 		log.Printf("server shutdown error: %v", shutdownErr)
 	}

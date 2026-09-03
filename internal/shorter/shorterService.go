@@ -10,6 +10,8 @@ import (
 	"urlShorter/internal/helper"
 	"urlShorter/internal/repository"
 	"urlShorter/internal/structs"
+
+	"github.com/lib/pq"
 )
 
 const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -31,28 +33,49 @@ func CreateLinkHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		shortURL, err := GenerateShortUrl()
-		if err != nil {
-			helper.WriteErrorResponse(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		storeResult, storeErr := storeShortURL(db, link)
 
-		linkRepoErr := repository.AddLink(db, link.URL, shortURL)
-		if linkRepoErr != nil {
-			helper.WriteErrorResponse(w, linkRepoErr.Error(), http.StatusInternalServerError)
+		if storeErr != nil {
+			helper.WriteErrorResponse(w, "failed to create short url", http.StatusInternalServerError)
+			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		encodeErr := json.NewEncoder(w).Encode(structs.SuccessResponse{
 			Success:  "created",
-			ShortURL: shortURL,
+			ShortURL: storeResult,
 		})
 		if encodeErr != nil {
 			log.Println(encodeErr)
 			return
 		}
 	}
+}
+
+func storeShortURL(db *sql.DB, link structs.LinkStruct) (string, error) {
+	for i := 0; i < 5; i++ {
+		var pqErr *pq.Error
+
+		shortURL, genErr := GenerateShortUrl()
+		if genErr != nil {
+			log.Println(genErr)
+			return "", genErr
+		}
+
+		err := repository.AddLink(db, link.URL, shortURL)
+		if err == nil {
+			return shortURL, nil
+		}
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			continue
+		}
+
+		log.Println(err)
+		return "", err
+	}
+
+	return "", errors.New("failed to generate unique short url")
 }
 
 func validateURL(linkURL string) error {
