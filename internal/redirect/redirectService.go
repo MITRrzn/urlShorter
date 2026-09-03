@@ -25,7 +25,7 @@ func RedirectHandler(db *sql.DB) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 
 		encodeErr := json.NewEncoder(w).Encode(structs.LinkResponse{
-			ShortURL:    redirectData.OriginalURL,
+			ShortURL:    redirectData.ShortURL,
 			OriginalURL: redirectData.OriginalURL,
 		})
 		if encodeErr != nil {

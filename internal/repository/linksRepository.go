@@ -30,7 +30,7 @@ func GetUrlByShortCode(db *sql.DB, shortCode string) (structs.LinkResponse, erro
 			WHERE l.short_code = $1;
 		`,
 		shortCode,
-	).Scan(&result)
+	).Scan(&result.ShortURL, &result.OriginalURL)
 
 	if err != nil {
 		return structs.LinkResponse{}, err
