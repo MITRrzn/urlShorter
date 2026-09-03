@@ -3,6 +3,7 @@ package redirect
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"urlShorter/internal/helper"
@@ -16,8 +17,13 @@ func RedirectHandler(db *sql.DB) http.HandlerFunc {
 
 		redirectData, err := repository.GetUrlByShortCode(db, code)
 		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				helper.WriteErrorResponse(w, "link not found", http.StatusNotFound)
+				return
+			}
+
 			log.Println(err)
-			helper.WriteErrorResponse(w, err.Error(), http.StatusInternalServerError)
+			helper.WriteErrorResponse(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
 

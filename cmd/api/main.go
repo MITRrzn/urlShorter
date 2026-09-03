@@ -22,8 +22,13 @@ func main() {
 	mux := http.NewServeMux()
 	db, err := database.Connect()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
+	defer func() {
+		if dbCloseErr := db.Close(); dbCloseErr != nil {
+			log.Printf("db close error: %v", dbCloseErr)
+		}
+	}()
 
 	mux.HandleFunc("POST /links", shorter.CreateLinkHandler(db))
 	mux.HandleFunc("GET /{code}", redirect.RedirectHandler(db))
@@ -46,10 +51,6 @@ func main() {
 
 	log.Println("Shutting down server")
 	shutdownErr := server.Shutdown(shutdownCtx)
-	dbCloseErr := db.Close()
-	if dbCloseErr != nil {
-		log.Printf("Error closing database connection: %s", dbCloseErr.Error())
-	}
 	if shutdownErr != nil {
 		log.Printf("server shutdown error: %v", shutdownErr)
 	}
