@@ -2,13 +2,14 @@ package kafka
 
 import (
 	"log"
+	"os"
 
 	"github.com/segmentio/kafka-go"
 )
 
-func GetWriter() *kafka.Writer {
+func NewWriter() *kafka.Writer {
 	writer := &kafka.Writer{
-		Addr:  kafka.TCP("kafka:9092"),
+		Addr:  kafka.TCP(os.Getenv("KAFKA_BROKER")),
 		Topic: "urlShorter-clicks",
 		Async: true,
 		Completion: func(messages []kafka.Message, err error) {

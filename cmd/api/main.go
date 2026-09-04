@@ -38,7 +38,7 @@ func main() {
 		log.Fatal(redisErr)
 	}
 
-	writer := kafkaClient.GetWriter()
+	writer := kafkaClient.NewWriter()
 	defer func(writer *kafka.Writer) {
 		writerErr := writer.Close()
 		if writerErr != nil {

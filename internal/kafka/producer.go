@@ -3,6 +3,7 @@ package kafka
 import (
 	"encoding/json"
 	"log"
+	"net"
 	"net/http"
 	"time"
 	"urlShorter/internal/structs"
@@ -12,6 +13,7 @@ import (
 )
 
 func ProcessClickEvent(r *http.Request, writer *kafka.Writer, linkResponse structs.LinkResponse) {
+	ipAddr, _, err := net.SplitHostPort(r.RemoteAddr)
 	clickData := structs.ClickEvent{
 		EventID:   uuid.New().String(),
 		LinkID:    linkResponse.ID,
@@ -19,6 +21,7 @@ func ProcessClickEvent(r *http.Request, writer *kafka.Writer, linkResponse struc
 		ClickedAt: time.Now().UTC(),
 		Referer:   r.Referer(),
 		UserAgent: r.UserAgent(),
+		IpHash:    ipAddr,
 	}
 
 	data, err := json.Marshal(clickData)

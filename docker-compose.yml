@@ -30,25 +30,25 @@ services:
     restart: unless-stopped
 
 
-#  analytics-worker:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#      target: analytics-worker
+  analytics-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: analytics-worker
 
-#    container_name: url-shortener-analytics
+    container_name: url-shortener-analytics
 
-#    environment:
-#      DATABASE_URL: postgres://postgres:postgres@postgres:5432/url_shortener?sslmode=disable
-#      KAFKA_BROKERS: kafka:9092
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/url_shortener?sslmode=disable
+      KAFKA_BROKERS: kafka:9092
 
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
-#      kafka:
-#        condition: service_healthy
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
 
-#    restart: unless-stopped
+    restart: unless-stopped
 
 
   postgres:
