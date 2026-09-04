@@ -68,7 +68,7 @@ func getValueFromCache(ctx context.Context, redisClient *redis.Client, key strin
 	}
 
 	if getErr != nil {
-		fmt.Printf("failed to get value, error: %v\n", getErr)
+		log.Printf("failed to get value, error: %v\n", getErr)
 		return "", getErr
 	}
 
