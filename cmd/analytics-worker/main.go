@@ -12,6 +12,7 @@ import (
 	"urlShorter/internal/repository"
 	"urlShorter/internal/structs"
 
+	"github.com/lib/pq"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -47,6 +48,7 @@ func main() {
 
 	for {
 		var event structs.ClickEvent
+
 		msg, fetchErr := reader.FetchMessage(ctx)
 		if errors.Is(fetchErr, context.Canceled) {
 			break
@@ -56,16 +58,23 @@ func main() {
 			continue
 		}
 
-		unmarshallErr := json.Unmarshal(msg.Value, &event)
-		if unmarshallErr != nil {
-			log.Println("Error unmarshalling", unmarshallErr)
+		unmarshalErr := json.Unmarshal(msg.Value, &event)
+		if unmarshalErr != nil {
+			log.Println("Error unmarshalling", unmarshalErr)
 			continue
 		}
 
 		addErr := repository.AddClick(ctx, db, event)
 		if addErr != nil {
-			log.Println("Error adding click", addErr)
-			continue
+			var pqErr *pq.Error
+
+			isDuplicateEvent := errors.As(addErr, &pqErr) && pqErr.Code == "23505" && pqErr.Constraint == "clicks_event_id_key"
+			if !isDuplicateEvent {
+				log.Println("Error adding click", addErr)
+				continue
+			}
+
+			log.Println("duplicate event:", event.EventID)
 		}
 
 		commitErr := reader.CommitMessages(ctx, msg)
