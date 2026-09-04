@@ -9,7 +9,7 @@ import (
 
 func NewWriter() *kafka.Writer {
 	writer := &kafka.Writer{
-		Addr:  kafka.TCP(os.Getenv("KAFKA_BROKER")),
+		Addr:  kafka.TCP(os.Getenv("KAFKA_BROKERS")),
 		Topic: "urlShorter-clicks",
 		Async: true,
 		Completion: func(messages []kafka.Message, err error) {

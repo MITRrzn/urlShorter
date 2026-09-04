@@ -23,7 +23,7 @@ func main() {
 	defer stop()
 
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: []string{os.Getenv("KAFKA_BROKER")},
+		Brokers: []string{os.Getenv("KAFKA_BROKERS")},
 		Topic:   "urlShorter-clicks",
 	})
 	defer func(reader *kafka.Reader) {

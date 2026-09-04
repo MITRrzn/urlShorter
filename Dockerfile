@@ -9,7 +9,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/api ./cmd/api
 RUN CGO_ENABLED=0 GOOS=linux go build -o seed ./cmd/seed
-#RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/analytics-worker ./cmd/analytics-worker
+RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/analytics-worker ./cmd/analytics-worker
 
 
 FROM alpine:3.22 AS api
@@ -24,10 +24,10 @@ EXPOSE 8080
 CMD ["./api"]
 
 
-#FROM alpine:3.22 AS analytics-worker
+FROM alpine:3.22 AS analytics-worker
 
-#WORKDIR /app
+WORKDIR /app
 
-#COPY --from=builder /bin/analytics-worker ./analytics-worker
+COPY --from=builder /bin/analytics-worker ./analytics-worker
 
-#CMD ["./analytics-worker"]
+CMD ["./analytics-worker"]
