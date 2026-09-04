@@ -14,6 +14,8 @@ import (
 	kafkaClient "urlShorter/internal/kafka"
 	"urlShorter/internal/redirect"
 	"urlShorter/internal/shorter"
+
+	"github.com/segmentio/kafka-go"
 )
 
 func main() {
@@ -36,7 +38,13 @@ func main() {
 		log.Fatal(redisErr)
 	}
 
-	writer := kafkaClient.GetKafkaClient()
+	writer := kafkaClient.GetWriter()
+	defer func(writer *kafka.Writer) {
+		writerErr := writer.Close()
+		if writerErr != nil {
+			log.Println(writerErr)
+		}
+	}(writer)
 
 	mux.HandleFunc("POST /links", shorter.CreateLinkHandler(db))
 	mux.HandleFunc("GET /{code}", redirect.RedirectHandler(db, redisClient, writer))

@@ -6,7 +6,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-func GetKafkaClient() *kafka.Writer {
+func GetWriter() *kafka.Writer {
 	writer := &kafka.Writer{
 		Addr:  kafka.TCP("kafka:9092"),
 		Topic: "urlShorter-clicks",
@@ -17,12 +17,6 @@ func GetKafkaClient() *kafka.Writer {
 			}
 		},
 	}
-	defer func(writer *kafka.Writer) {
-		writerErr := writer.Close()
-		if writerErr != nil {
-			log.Println(writerErr)
-		}
-	}(writer)
 
 	return writer
 }
