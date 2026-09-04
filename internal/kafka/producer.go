@@ -21,7 +21,7 @@ func ProcessClickEvent(r *http.Request, writer *kafka.Writer, linkResponse struc
 		ClickedAt: time.Now().UTC(),
 		Referer:   r.Referer(),
 		UserAgent: r.UserAgent(),
-		IpHash:    ipAddr,
+		Ip:        ipAddr,
 	}
 
 	data, err := json.Marshal(clickData)

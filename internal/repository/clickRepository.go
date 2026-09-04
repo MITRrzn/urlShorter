@@ -14,7 +14,7 @@ func AddClick(ctx context.Context, db *sql.DB, event structs.ClickEvent) error {
 		event.ClickedAt,
 		event.Referer,
 		event.UserAgent,
-		event.IpHash,
+		event.Ip,
 	)
 	return err
 }

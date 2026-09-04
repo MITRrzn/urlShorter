@@ -9,5 +9,5 @@ type ClickEvent struct {
 	ClickedAt time.Time `json:"clicked_at"`
 	Referer   string    `json:"referer"`
 	UserAgent string    `json:"user_agent"`
-	IpHash    string    `json:"ip_hash"`
+	Ip        string    `json:"ip"`
 }
