@@ -18,18 +18,22 @@ func PsqlConnect() (*sql.DB, error) {
 		return nil, err
 	}
 
-	if err := db.Ping(); err != nil {
-		db.Close()
-		return nil, err
+	if pingErr := db.Ping(); pingErr != nil {
+		closeErr := db.Close()
+		if closeErr != nil {
+			return nil, closeErr
+		}
+		return nil, pingErr
 	}
 
 	return db, nil
 }
 
 func GetRedisClient(ctx context.Context) (*redis.Client, error) {
-	redisDB, err := strconv.Atoi(os.Getenv("REDIS_DB"))
-	if err != nil {
-		log.Fatal(err)
+	redisDB, envErr := strconv.Atoi(os.Getenv("REDIS_DB"))
+	if envErr != nil {
+		log.Println(envErr)
+		return nil, envErr
 	}
 
 	db := redis.NewClient(&redis.Options{
@@ -45,6 +49,10 @@ func GetRedisClient(ctx context.Context) (*redis.Client, error) {
 
 	if err := db.Ping(ctx).Err(); err != nil {
 		log.Printf("failed to connect to redis server: %s\n", err.Error())
+		closeErr := db.Close()
+		if closeErr != nil {
+			return nil, closeErr
+		}
 		return nil, err
 	}
 

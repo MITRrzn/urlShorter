@@ -11,10 +11,10 @@ import (
 	"regexp"
 	"time"
 	"urlShorter/internal/helper"
+	kafkaProducer "urlShorter/internal/kafka"
 	"urlShorter/internal/repository"
 	"urlShorter/internal/structs"
 
-	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"github.com/segmentio/kafka-go"
 )
@@ -71,34 +71,8 @@ func RedirectHandler(db *sql.DB, redisClient *redis.Client, writer *kafka.Writer
 }
 
 func handleResolvedLink(w http.ResponseWriter, r *http.Request, writer *kafka.Writer, linkResponse structs.LinkResponse) {
-	processClickEvent(r, writer, linkResponse)
+	kafkaProducer.ProcessClickEvent(r, writer, linkResponse)
 	http.Redirect(w, r, linkResponse.OriginalURL, http.StatusFound)
-}
-
-func processClickEvent(r *http.Request, writer *kafka.Writer, linkResponse structs.LinkResponse) {
-	clickData := structs.ClickEvent{
-		EventID:   uuid.New().String(),
-		LinkID:    linkResponse.ID,
-		ShortCode: linkResponse.ShortURL,
-		ClickedAt: time.Now().UTC(),
-		Referer:   r.Referer(),
-		UserAgent: r.UserAgent(),
-	}
-
-	data, err := json.Marshal(clickData)
-	if err != nil {
-		log.Println("json marshal error:", err)
-		return
-	}
-
-	err = writer.WriteMessages(r.Context(), kafka.Message{
-		Key:   []byte(linkResponse.ShortURL),
-		Value: data,
-	})
-	if err != nil {
-		log.Println("write kafka messages error:", err)
-		return
-	}
 }
 
 func getValueFromCache(ctx context.Context, redisClient *redis.Client, key string) (structs.LinkResponse, error) {

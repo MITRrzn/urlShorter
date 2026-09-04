@@ -50,7 +50,7 @@ func main() {
 	defer func(writer *kafka.Writer) {
 		writerErr := writer.Close()
 		if writerErr != nil {
-			log.Fatal(writerErr)
+			log.Println(writerErr)
 		}
 	}(writer)
 
