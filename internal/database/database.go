@@ -19,6 +19,7 @@ func PsqlConnect() (*sql.DB, error) {
 	}
 
 	if err := db.Ping(); err != nil {
+		db.Close()
 		return nil, err
 	}
 
