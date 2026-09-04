@@ -11,10 +11,9 @@ import (
 	"syscall"
 	"time"
 	"urlShorter/internal/database"
+	kafkaClient "urlShorter/internal/kafka"
 	"urlShorter/internal/redirect"
 	"urlShorter/internal/shorter"
-
-	"github.com/segmentio/kafka-go"
 )
 
 func main() {
@@ -37,22 +36,7 @@ func main() {
 		log.Fatal(redisErr)
 	}
 
-	writer := &kafka.Writer{
-		Addr:  kafka.TCP("kafka:9092"),
-		Topic: "urlShorter-clicks",
-		Async: true,
-		Completion: func(messages []kafka.Message, err error) {
-			if err != nil {
-				log.Printf("kafka write error: %v", err)
-			}
-		},
-	}
-	defer func(writer *kafka.Writer) {
-		writerErr := writer.Close()
-		if writerErr != nil {
-			log.Println(writerErr)
-		}
-	}(writer)
+	writer := kafkaClient.GetKafkaClient()
 
 	mux.HandleFunc("POST /links", shorter.CreateLinkHandler(db))
 	mux.HandleFunc("GET /{code}", redirect.RedirectHandler(db, redisClient, writer))

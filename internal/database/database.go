@@ -21,7 +21,7 @@ func PsqlConnect() (*sql.DB, error) {
 	if pingErr := db.Ping(); pingErr != nil {
 		closeErr := db.Close()
 		if closeErr != nil {
-			return nil, closeErr
+			log.Printf("failed to close postgres connection: %v\n", closeErr)
 		}
 		return nil, pingErr
 	}
@@ -51,7 +51,7 @@ func GetRedisClient(ctx context.Context) (*redis.Client, error) {
 		log.Printf("failed to connect to redis server: %s\n", err.Error())
 		closeErr := db.Close()
 		if closeErr != nil {
-			return nil, closeErr
+			log.Printf("failed to close redis connection: %v\n", closeErr)
 		}
 		return nil, err
 	}
