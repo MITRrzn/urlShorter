@@ -60,6 +60,12 @@ func main() {
 
 		unmarshalErr := json.Unmarshal(msg.Value, &event)
 		if unmarshalErr != nil {
+			commitErr := reader.CommitMessages(ctx, msg)
+			if commitErr != nil {
+				log.Println("Error committing bad message", commitErr)
+				return
+			}
+
 			log.Println("Error unmarshalling", unmarshalErr)
 			continue
 		}
