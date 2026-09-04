@@ -25,6 +25,7 @@ func GetUrlByShortCode(ctx context.Context, db *sql.DB, shortCode string) (struc
 		ctx,
 		`
 		SELECT
+		    l.id as id,
     		l.short_code AS short_code,
     		l.original_url AS original_url
 
@@ -33,7 +34,7 @@ func GetUrlByShortCode(ctx context.Context, db *sql.DB, shortCode string) (struc
 			WHERE l.short_code = $1;
 		`,
 		shortCode,
-	).Scan(&result.ShortURL, &result.OriginalURL)
+	).Scan(&result.ID, &result.ShortURL, &result.OriginalURL)
 
 	if err != nil {
 		return structs.LinkResponse{}, err
