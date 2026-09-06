@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"regexp"
 	"time"
 	"urlShorter/internal/helper"
 	kafkaProducer "urlShorter/internal/kafka"
@@ -19,12 +18,10 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-var shortCodeRegex = regexp.MustCompile(`^[a-zA-Z0-9]{7}$`)
-
 func RedirectHandler(db *sql.DB, redisClient *redis.Client, writer *kafka.Writer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		code := r.PathValue("code")
-		validationErr := validateCode(code)
+		validationErr := helper.ValidateCode(code)
 		if validationErr != nil {
 			helper.WriteErrorResponse(w, validationErr.Error(), http.StatusBadRequest)
 			return
@@ -92,18 +89,4 @@ func getValueFromCache(ctx context.Context, redisClient *redis.Client, key strin
 	}
 
 	return linkData, nil
-}
-
-func validateCode(code string) error {
-	if code == "" {
-		return errors.New("empty code")
-	}
-	if len(code) != 7 {
-		return errors.New("invalid code")
-	}
-	if !shortCodeRegex.MatchString(code) {
-		return errors.New("incorrect code")
-	}
-
-	return nil
 }

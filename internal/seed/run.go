@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"urlShorter/internal/repository"
-	"urlShorter/internal/shorter"
+	"urlShorter/internal/service/shorter"
 
 	"github.com/go-faker/faker/v4"
 	"github.com/schollz/progressbar/v3"

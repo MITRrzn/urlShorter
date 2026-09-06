@@ -12,8 +12,9 @@ import (
 	"time"
 	"urlShorter/internal/database"
 	kafkaClient "urlShorter/internal/kafka"
-	"urlShorter/internal/redirect"
-	"urlShorter/internal/shorter"
+	"urlShorter/internal/service/redirect"
+	"urlShorter/internal/service/shorter"
+	"urlShorter/internal/service/stats"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -22,7 +23,6 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	mux := http.NewServeMux()
 	db, err := database.PsqlConnect()
 	if err != nil {
 		log.Fatal(err)
@@ -46,8 +46,10 @@ func main() {
 		}
 	}(writer)
 
+	mux := http.NewServeMux()
 	mux.HandleFunc("POST /links", shorter.CreateLinkHandler(db))
 	mux.HandleFunc("GET /{code}", redirect.RedirectHandler(db, redisClient, writer))
+	mux.HandleFunc("GET /{code}/details", stats.StatsHandler(db))
 
 	port := os.Getenv("APP_PORT")
 	log.Println("Starting server at port", port)
