@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"log"
+	"time"
 	"urlShorter/internal/structs"
 )
 
@@ -18,4 +20,47 @@ func AddClick(ctx context.Context, db *sql.DB, event structs.ClickEvent) error {
 		event.EventID,
 	)
 	return err
+}
+
+func GetYesterdayClicks(ctx context.Context, db *sql.DB, previousDayStart time.Time, previousDayEnd time.Time) ([]structs.LinkStat, error) {
+	rows, err := db.QueryContext(
+		ctx,
+		`SELECT link_id, COUNT(*)
+    			FROM clicks
+    				WHERE clicked_at >= $1 AND clicked_at < $2
+    			GROUP BY link_id
+    	`,
+		previousDayStart,
+		previousDayEnd,
+	)
+	if err != nil {
+		log.Println(err)
+		return []structs.LinkStat{}, err
+	}
+
+	defer func(rows *sql.Rows) {
+		rowsCloseErr := rows.Close()
+		if rowsCloseErr != nil {
+			return
+		}
+	}(rows)
+
+	var results []structs.LinkStat
+
+	for rows.Next() {
+		var data structs.LinkStat
+
+		if scanErr := rows.Scan(
+			&data.LinkID,
+			&data.ClicksCount,
+		); scanErr != nil {
+			return nil, scanErr
+		}
+
+		data.StatDate = previousDayStart
+
+		results = append(results, data)
+	}
+
+	return results, nil
 }
