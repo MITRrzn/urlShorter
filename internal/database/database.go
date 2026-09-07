@@ -48,11 +48,12 @@ func GetRedisClient(ctx context.Context) (*redis.Client, error) {
 	})
 
 	if err := db.Ping(ctx).Err(); err != nil {
-		log.Printf("failed to connect to redis server: %s\n", err.Error())
-		closeErr := db.Close()
-		if closeErr != nil {
-			log.Printf("failed to close redis connection: %v\n", closeErr)
+		log.Printf("failed to connect to redis server: %v", err)
+
+		if closeErr := db.Close(); closeErr != nil {
+			log.Printf("failed to close redis connection: %v", closeErr)
 		}
+
 		return nil, err
 	}
 

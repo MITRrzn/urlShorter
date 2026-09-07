@@ -35,7 +35,8 @@ func main() {
 
 	redisClient, redisErr := database.GetRedisClient(ctx)
 	if redisErr != nil {
-		log.Fatal(redisErr)
+		log.Printf("failed to initialize redis client: %v", err)
+		return
 	}
 
 	writer := kafkaClient.NewWriter()
