@@ -10,7 +10,7 @@ import (
 	"github.com/schollz/progressbar/v3"
 )
 
-func Run(db *sql.DB, amount int64) int64 {
+func SeedLinks(db *sql.DB, amount int64) int64 {
 	var total int64
 
 	ctx := context.Background()
