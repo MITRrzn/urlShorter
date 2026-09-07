@@ -10,7 +10,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/api ./cmd/api
 RUN CGO_ENABLED=0 GOOS=linux go build -o seed ./cmd/seed
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/analytics-worker ./cmd/analytics-worker
-RUN go build -o /analytics-aggregator ./cmd/analytics-aggregator
+RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/analytics-aggregator ./cmd/analytics-aggregator
 
 
 FROM alpine:3.22 AS api
@@ -33,10 +33,10 @@ COPY --from=builder /bin/analytics-worker ./analytics-worker
 
 CMD ["./analytics-worker"]
 
-FROM alpine AS analytics-aggregator
+FROM alpine:3.22 AS analytics-aggregator
 
 WORKDIR /app
 
-COPY --from=builder /analytics-aggregator .
+COPY --from=builder /bin/analytics-aggregator ./analytics-aggregator
 
 CMD ["./analytics-aggregator"]
