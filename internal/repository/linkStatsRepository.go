@@ -7,14 +7,25 @@ import (
 	"urlShorter/internal/structs"
 )
 
-func AddDailyLinkStat(ctx context.Context, db *sql.DB, linkStat structs.LinkStat) error {
+func AddDailyLinkStat(ctx context.Context, db *sql.DB, stat structs.LinkStat) error {
 	_, err := db.ExecContext(
 		ctx,
-		`INSERT INTO link_stats_daily(link_id, stat_date, clicks_count)
-			VALUES($1, $2, $3)
-			`,
-		linkStat.LinkID, linkStat.StatDate, linkStat.ClicksCount,
+		`
+        INSERT INTO link_stats_daily (
+            link_id,
+            stat_date,
+            clicks_count
+        )
+        VALUES ($1, $2, $3)
+        ON CONFLICT (link_id, stat_date)
+        DO UPDATE SET
+            clicks_count = EXCLUDED.clicks_count
+        `,
+		stat.LinkID,
+		stat.StatDate,
+		stat.ClicksCount,
 	)
+
 	return err
 }
 
