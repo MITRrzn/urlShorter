@@ -13,7 +13,7 @@ import (
 )
 
 func ProcessClickEvent(r *http.Request, writer *kafka.Writer, linkResponse structs.LinkResponse) {
-	ipAddr, _, err := net.SplitHostPort(r.RemoteAddr)
+	ipAddr, _, splitErr := net.SplitHostPort(r.RemoteAddr)
 	clickData := structs.ClickEvent{
 		EventID:   uuid.New().String(),
 		LinkID:    linkResponse.ID,
@@ -22,6 +22,9 @@ func ProcessClickEvent(r *http.Request, writer *kafka.Writer, linkResponse struc
 		Referer:   r.Referer(),
 		UserAgent: r.UserAgent(),
 		Ip:        ipAddr,
+	}
+	if splitErr != nil {
+		log.Println(splitErr)
 	}
 
 	data, err := json.Marshal(clickData)

@@ -4,7 +4,7 @@ CREATE TABLE clicks (
                         clicked_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                         referer TEXT NULL,
                         user_agent TEXT NULL,
-                        ip_hash VARCHAR(64) NULL,
+                        ip VARCHAR(15) NULL,
 
                         CONSTRAINT fk_clicks_link
                             FOREIGN KEY (link_id)
