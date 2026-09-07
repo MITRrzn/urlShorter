@@ -1,4 +1,9 @@
 services:
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ./migrations:/migrations
+
   api:
     build:
       context: .
