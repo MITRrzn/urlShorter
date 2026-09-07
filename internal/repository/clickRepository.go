@@ -35,10 +35,7 @@ func GetYesterdayClicks(ctx context.Context, db *sql.DB, previousDayStart time.T
 	)
 	if err != nil {
 		log.Println(err)
-		return []structs.LinkStat{}, err
-	}
-	if rowsErr := rows.Err(); rowsErr != nil {
-		return nil, rowsErr
+		return nil, err
 	}
 
 	defer rows.Close()
@@ -58,6 +55,9 @@ func GetYesterdayClicks(ctx context.Context, db *sql.DB, previousDayStart time.T
 		data.StatDate = previousDayStart
 
 		results = append(results, data)
+	}
+	if rowsErr := rows.Err(); rowsErr != nil {
+		return nil, rowsErr
 	}
 
 	return results, nil
