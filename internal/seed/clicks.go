@@ -7,13 +7,15 @@ import (
 	"math/rand"
 	"reflect"
 	"time"
+	"urlShorter/internal/repository"
+	"urlShorter/internal/structs"
 
 	"github.com/go-faker/faker/v4"
 	"github.com/google/uuid"
 	"github.com/schollz/progressbar/v3"
 )
 
-func SeedClicks(db *sql.DB) int64 {
+func ClicksSeed(db *sql.DB) int64 {
 	ctx := context.Background()
 
 	rows, err := db.QueryContext(ctx, `
@@ -23,7 +25,12 @@ func SeedClicks(db *sql.DB) int64 {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		rowsCloseErr := rows.Close()
+		if rowsCloseErr != nil {
+			return
+		}
+	}(rows)
 
 	var linkIDs []int64
 
@@ -51,29 +58,17 @@ func SeedClicks(db *sql.DB) int64 {
 		clicksCount := rand.Intn(141) + 10
 
 		for i := 0; i < clicksCount; i++ {
-
-			_, dbExecErr := db.ExecContext(
-				ctx,
-				`
-				INSERT INTO clicks (
-					link_id,
-					clicked_at,
-					referer,
-					user_agent,
-					ip_hash,
-					event_id
-				)
-				VALUES ($1, $2, $3, $4, $5, $6)
-				`,
-				linkID,
-				randomDateLast30Days(),
-				faker.URL(),
-				fakeUserAgent(),
-				faker.IPv4(),
-				uuid.New(),
-			)
-			if dbExecErr != nil {
-				log.Fatal(dbExecErr)
+			addClickErr := repository.AddClick(ctx, db, structs.ClickEvent{
+				EventID:   uuid.New().String(),
+				LinkID:    linkID,
+				ShortCode: "",
+				ClickedAt: randomDateLast30Days(),
+				Referer:   faker.URL(),
+				UserAgent: fakeUserAgent(),
+				Ip:        faker.IPv4(),
+			})
+			if addClickErr != nil {
+				continue
 			}
 			total++
 		}
