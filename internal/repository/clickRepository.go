@@ -37,13 +37,11 @@ func GetYesterdayClicks(ctx context.Context, db *sql.DB, previousDayStart time.T
 		log.Println(err)
 		return []structs.LinkStat{}, err
 	}
+	if rowsErr := rows.Err(); rowsErr != nil {
+		return nil, rowsErr
+	}
 
-	defer func(rows *sql.Rows) {
-		rowsCloseErr := rows.Close()
-		if rowsCloseErr != nil {
-			return
-		}
-	}(rows)
+	defer rows.Close()
 
 	var results []structs.LinkStat
 

@@ -31,11 +31,15 @@ func main() {
 	previousDayStart := todayStart.AddDate(0, 0, -1)
 	previousDayEnd := todayStart
 
-	prevDayData, err := repository.GetYesterdayClicks(ctx, db, previousDayStart, previousDayEnd)
+	prevDayData, repoErr := repository.GetYesterdayClicks(ctx, db, previousDayStart, previousDayEnd)
+	if repoErr != nil {
+		log.Fatal(repoErr)
+	}
 
 	for _, data := range prevDayData {
 		addErr := repository.AddDailyLinkStat(ctx, db, data)
 		if addErr != nil {
+			log.Printf("failed to add daily stat: %v", addErr)
 			return
 		}
 	}
