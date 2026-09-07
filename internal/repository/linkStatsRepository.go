@@ -7,6 +7,17 @@ import (
 	"urlShorter/internal/structs"
 )
 
+func AddDailyLinkStat(ctx context.Context, db *sql.DB, linkStat structs.LinkStat) error {
+	_, err := db.ExecContext(
+		ctx,
+		`INSERT INTO link_stats_daily(link_id, stat_date, clicks_count)
+			VALUES($1, $2, $3)
+			`,
+		linkStat.LinkID, linkStat.StatDate, linkStat.ClicksCount,
+	)
+	return err
+}
+
 func GetStatByCode(ctx context.Context, db *sql.DB, code string) (structs.Stats, error) {
 	var stat structs.Stats
 
@@ -35,11 +46,7 @@ func GetStatByCode(ctx context.Context, db *sql.DB, code string) (structs.Stats,
 	return stat, nil
 }
 
-func getDailyStats(
-	ctx context.Context,
-	db *sql.DB,
-	shortCode string,
-) ([]structs.DailyStats, error) {
+func getDailyStats(ctx context.Context, db *sql.DB, shortCode string) ([]structs.DailyStats, error) {
 	rows, queryErr := db.QueryContext(
 		ctx,
 		`
@@ -55,7 +62,12 @@ func getDailyStats(
 	if queryErr != nil {
 		return nil, queryErr
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		rowsCloseErr := rows.Close()
+		if rowsCloseErr != nil {
+			return
+		}
+	}(rows)
 
 	var dailyStats []structs.DailyStats
 	for rows.Next() {

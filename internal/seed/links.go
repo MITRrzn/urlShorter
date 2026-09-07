@@ -14,7 +14,7 @@ func LinksSeed(db *sql.DB, amount int64) int64 {
 	var total int64
 
 	ctx := context.Background()
-	pb := progressbar.Default(amount)
+	pb := progressbar.Default(amount, "links seeding")
 	for i := 0; int64(i) < amount; i++ {
 		err := pb.Add(1)
 		sourceURL := faker.URL()

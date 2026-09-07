@@ -49,7 +49,7 @@ func ClicksSeed(db *sql.DB) int64 {
 	}
 
 	var total int64
-	pb := progressbar.Default(int64(len(linkIDs)))
+	pb := progressbar.Default(int64(len(linkIDs)), "clicks seeding")
 	for _, linkID := range linkIDs {
 		pbErr := pb.Add(1)
 		if pbErr != nil {

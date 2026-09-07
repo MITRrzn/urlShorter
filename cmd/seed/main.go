@@ -25,7 +25,9 @@ func main() {
 
 	totalLinks := seed.LinksSeed(db, *amount)
 	totalClicks := seed.ClicksSeed(db)
+	totalStats := seed.LinksStatSeed(db)
 
 	fmt.Println(fmt.Sprintf("%d links seeded", totalLinks))
 	fmt.Println(fmt.Sprintf("%d clicks seeded", totalClicks))
+	fmt.Println(fmt.Sprintf("%d stats seeded", totalStats))
 }
