@@ -1,7 +1,6 @@
 package shorter
 
 import (
-	"fmt"
 	"testing"
 	"urlShorter/internal/helper"
 
@@ -11,12 +10,9 @@ import (
 func TestGenerateShortUrl(t *testing.T) {
 	shortURL, err := GenerateShortUrl()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	isValid := helper.ValidateCode(shortURL)
-	if !assert.Nil(t, isValid) {
-		fmt.Println(shortURL, isValid)
-		t.Error("generated shortURL is not valid")
-	}
+	assert.Nil(t, isValid)
 }

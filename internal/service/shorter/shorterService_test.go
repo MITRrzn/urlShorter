@@ -202,9 +202,7 @@ func TestValidateURL(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			result := validateURL(testCase.URL)
-			if !assert.Equal(t, testCase.expected, result) {
-				t.Errorf("validateURL(%s) expected %v, actual %v", testCase.URL, testCase.expected, result)
-			}
+			assert.Equal(t, testCase.expected, result)
 		})
 	}
 }
