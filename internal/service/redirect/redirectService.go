@@ -81,11 +81,11 @@ func getValueFromCache(ctx context.Context, redisClient *redis.Client, key strin
 	}
 
 	if err != nil {
-		return structs.LinkResponse{}, err
+		return structs.LinkResponse{}, errors.New("redis error")
 	}
 
-	if err := json.Unmarshal(data, &linkData); err != nil {
-		return structs.LinkResponse{}, err
+	if unmarshalErr := json.Unmarshal(data, &linkData); unmarshalErr != nil {
+		return structs.LinkResponse{}, errors.New("unmarshal error")
 	}
 
 	return linkData, nil
