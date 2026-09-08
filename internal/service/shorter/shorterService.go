@@ -17,6 +17,10 @@ import (
 
 const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
+var generateShortURL = GenerateShortUrl
+var addLink = repository.AddLink
+var storeShortURLFn = storeShortURL
+
 func CreateLinkHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var link structs.LinkStruct
@@ -34,7 +38,7 @@ func CreateLinkHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		storeResult, storeErr := storeShortURL(r.Context(), db, link)
+		storeResult, storeErr := storeShortURLFn(r.Context(), db, link)
 
 		if storeErr != nil {
 			helper.WriteErrorResponse(w, "failed to create short url", http.StatusInternalServerError)
@@ -58,13 +62,13 @@ func storeShortURL(ctx context.Context, db *sql.DB, link structs.LinkStruct) (st
 	for i := 0; i < 5; i++ {
 		var pqErr *pq.Error
 
-		shortURL, genErr := GenerateShortUrl()
+		shortURL, genErr := generateShortURL()
 		if genErr != nil {
 			log.Println(genErr)
 			return "", genErr
 		}
 
-		err := repository.AddLink(ctx, db, link.URL, shortURL)
+		err := addLink(ctx, db, link.URL, shortURL)
 		if err == nil {
 			return shortURL, nil
 		}
