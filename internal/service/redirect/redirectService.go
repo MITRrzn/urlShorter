@@ -22,11 +22,12 @@ var getValueFromCacheFn = getValueFromCache
 var getURLByShortCodeFn = repository.GetUrlByShortCode
 var handleResolvedLinkFn = handleResolvedLink
 var setValueToCacheFn = setValueToCache
+var validateCodeFn = helper.ValidateCode
 
 func RedirectHandler(db *sql.DB, redisClient *redis.Client, writer *kafka.Writer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		code := r.PathValue("code")
-		validationErr := helper.ValidateCode(code)
+		validationErr := validateCodeFn(code)
 		if validationErr != nil {
 			helper.WriteErrorResponse(w, validationErr.Error(), http.StatusBadRequest)
 			return

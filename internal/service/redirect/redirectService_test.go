@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -136,7 +137,10 @@ func TestSetValueToCacheSuccess(t *testing.T) {
 
 	cachedValue, err := mr.Get("link:QweRty1")
 	require.NoError(t, err)
-	valueFromCache := json.Unmarshal([]byte(cachedValue), &structs.LinkResponse{})
+
+	var valueFromCache structs.LinkResponse
+	err = json.Unmarshal([]byte(cachedValue), &valueFromCache)
+	require.NoError(t, err)
 	assert.Equal(t, data, valueFromCache)
 }
 
@@ -291,4 +295,31 @@ func TestRedirectHandlerDbHit(t *testing.T) {
 	assert.Equal(t, 1, cacheSetCalls)
 	assert.Equal(t, 1, handleCalls)
 	assert.Equal(t, expected, actual)
+}
+
+func TestRedirectHandlerInvalidCode(t *testing.T) {
+	oldValidateCode := validateCodeFn
+
+	t.Cleanup(func() {
+		validateCodeFn = oldValidateCode
+	})
+
+	validateCodeFn = func(code string) error {
+		return errors.New("incorrect code")
+	}
+
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"/bad",
+		nil,
+	)
+
+	req.SetPathValue("code", "@invalidCode#")
+
+	recorder := httptest.NewRecorder()
+
+	handler := RedirectHandler(nil, nil, nil)
+	handler.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
 }
