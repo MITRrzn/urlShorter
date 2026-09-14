@@ -44,7 +44,7 @@ services:
     container_name: url-shortener-analytics
 
     environment:
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/url_shortener?sslmode=disable
+      DATABASE_URL: ${DATABASE_URL}
       KAFKA_BROKERS: kafka:9092
 
     depends_on:

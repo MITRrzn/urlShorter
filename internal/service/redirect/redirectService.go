@@ -49,18 +49,9 @@ func RedirectHandler(db *sql.DB, redisClient *redis.Client, writer *kafka.Writer
 			return
 		}
 
-		data, marshalErr := json.Marshal(redirectData)
-		if marshalErr != nil {
-			log.Println(marshalErr)
-		} else {
-			if cacheSetErr := redisClient.Set(
-				r.Context(),
-				fmt.Sprintf("link:%s", redirectData.ShortURL),
-				data,
-				60*time.Minute,
-			).Err(); cacheSetErr != nil {
-				log.Println("redis set error:", cacheSetErr)
-			}
+		setErr := setValueToCache(r.Context(), redisClient, redirectData)
+		if setErr != nil {
+			log.Println("redis set error:", setErr)
 		}
 
 		handleResolvedLink(w, r, writer, redirectData)
@@ -89,4 +80,18 @@ func getValueFromCache(ctx context.Context, redisClient *redis.Client, key strin
 	}
 
 	return linkData, nil
+}
+
+func setValueToCache(ctx context.Context, redisClient *redis.Client, redirectData structs.LinkResponse) error {
+	data, err := json.Marshal(redirectData)
+	if err != nil {
+		return err
+	}
+
+	return redisClient.Set(
+		ctx,
+		fmt.Sprintf("link:%s", redirectData.ShortURL),
+		data,
+		60*time.Minute,
+	).Err()
 }

@@ -107,3 +107,53 @@ func TestGetValueFromCacheUnmarshalError(t *testing.T) {
 
 	assert.Equal(t, errors.New("unmarshal error"), getError)
 }
+
+func TestSetValueToCacheSuccess(t *testing.T) {
+	mr, err := miniredis.Run()
+	require.NoError(t, err)
+	defer mr.Close()
+
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: mr.Addr(),
+	})
+	defer redisClient.Close()
+
+	data := structs.LinkResponse{
+		ID:          1,
+		ShortURL:    "QweRty1",
+		OriginalURL: "https://example.com",
+	}
+
+	err = setValueToCache(
+		context.Background(),
+		redisClient,
+		data,
+	)
+	require.NoError(t, err)
+}
+
+func TestSetValueToCacheSetErr(t *testing.T) {
+	mr, err := miniredis.Run()
+	require.NoError(t, err)
+	defer mr.Close()
+
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: mr.Addr(),
+	})
+
+	mr.Close()
+
+	data := structs.LinkResponse{
+		ID:          1,
+		ShortURL:    "QweRty1",
+		OriginalURL: "https://example.com",
+	}
+
+	err = setValueToCache(
+		context.Background(),
+		redisClient,
+		data,
+	)
+
+	assert.Error(t, err)
+}
