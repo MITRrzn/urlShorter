@@ -18,6 +18,11 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+var getValueFromCacheFn = getValueFromCache
+var getURLByShortCodeFn = repository.GetUrlByShortCode
+var handleResolvedLinkFn = handleResolvedLink
+var setValueToCacheFn = setValueToCache
+
 func RedirectHandler(db *sql.DB, redisClient *redis.Client, writer *kafka.Writer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		code := r.PathValue("code")
@@ -27,9 +32,9 @@ func RedirectHandler(db *sql.DB, redisClient *redis.Client, writer *kafka.Writer
 			return
 		}
 
-		valueFromCache, cacheErr := getValueFromCache(r.Context(), redisClient, code)
+		valueFromCache, cacheErr := getValueFromCacheFn(r.Context(), redisClient, code)
 		if cacheErr == nil {
-			handleResolvedLink(w, r, writer, valueFromCache)
+			handleResolvedLinkFn(w, r, writer, valueFromCache)
 			return
 		}
 
@@ -37,7 +42,7 @@ func RedirectHandler(db *sql.DB, redisClient *redis.Client, writer *kafka.Writer
 			log.Println("redis error:", cacheErr)
 		}
 
-		redirectData, err := repository.GetUrlByShortCode(r.Context(), db, code)
+		redirectData, err := getURLByShortCodeFn(r.Context(), db, code)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				helper.WriteErrorResponse(w, "link not found", http.StatusNotFound)
@@ -49,12 +54,12 @@ func RedirectHandler(db *sql.DB, redisClient *redis.Client, writer *kafka.Writer
 			return
 		}
 
-		setErr := setValueToCache(r.Context(), redisClient, redirectData)
+		setErr := setValueToCacheFn(r.Context(), redisClient, redirectData)
 		if setErr != nil {
 			log.Println("redis set error:", setErr)
 		}
 
-		handleResolvedLink(w, r, writer, redirectData)
+		handleResolvedLinkFn(w, r, writer, redirectData)
 	}
 }
 
